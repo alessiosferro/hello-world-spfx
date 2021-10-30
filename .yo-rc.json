@@ -1,0 +1,8 @@
+{
+  "@microsoft/generator-sharepoint": {
+    "version": "1.4.1",
+    "libraryName": "hello-world-app",
+    "libraryId": "b7d147e5-be14-4930-9a35-0ea53a5117ee",
+    "environment": "spo"
+  }
+}
