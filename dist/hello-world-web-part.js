@@ -1,4 +1,4 @@
-define("30596a5b-f4c5-4967-a01d-53a15b020391_0.0.1", ["react","react-dom","@microsoft/sp-core-library","@microsoft/sp-webpart-base","HelloWorldWebPartStrings","@microsoft/sp-lodash-subset"], function(__WEBPACK_EXTERNAL_MODULE_0__, __WEBPACK_EXTERNAL_MODULE_2__, __WEBPACK_EXTERNAL_MODULE_3__, __WEBPACK_EXTERNAL_MODULE_4__, __WEBPACK_EXTERNAL_MODULE_5__, __WEBPACK_EXTERNAL_MODULE_13__) { return /******/ (function(modules) { // webpackBootstrap
+define("30596a5b-f4c5-4967-a01d-53a15b020391_0.0.1", ["react","@microsoft/sp-core-library","react-dom","@microsoft/sp-webpart-base","HelloWorldWebPartStrings","@microsoft/sp-http","@microsoft/sp-lodash-subset"], function(__WEBPACK_EXTERNAL_MODULE_0__, __WEBPACK_EXTERNAL_MODULE_1__, __WEBPACK_EXTERNAL_MODULE_3__, __WEBPACK_EXTERNAL_MODULE_4__, __WEBPACK_EXTERNAL_MODULE_5__, __WEBPACK_EXTERNAL_MODULE_7__, __WEBPACK_EXTERNAL_MODULE_15__) { return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 /******/
@@ -60,7 +60,7 @@ define("30596a5b-f4c5-4967-a01d-53a15b020391_0.0.1", ["react","react-dom","@micr
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 1);
+/******/ 	return __webpack_require__(__webpack_require__.s = 2);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -71,6 +71,12 @@ module.exports = __WEBPACK_EXTERNAL_MODULE_0__;
 
 /***/ }),
 /* 1 */
+/***/ (function(module, exports) {
+
+module.exports = __WEBPACK_EXTERNAL_MODULE_1__;
+
+/***/ }),
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -87,25 +93,33 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(0);
-var ReactDom = __webpack_require__(2);
-var sp_core_library_1 = __webpack_require__(3);
+var ReactDom = __webpack_require__(3);
+var sp_core_library_1 = __webpack_require__(1);
 var sp_webpart_base_1 = __webpack_require__(4);
+var sp_core_library_2 = __webpack_require__(1);
 var strings = __webpack_require__(5);
-var HelloWorld_1 = __webpack_require__(6);
+var MockHttpClient_1 = __webpack_require__(6);
+var sp_http_1 = __webpack_require__(7);
+var HelloWorld_1 = __webpack_require__(8);
 var HelloWorldWebPart = (function (_super) {
     __extends(HelloWorldWebPart, _super);
     function HelloWorldWebPart() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     HelloWorldWebPart.prototype.render = function () {
-        var element = React.createElement(HelloWorld_1.default, {
-            description: this.properties.description,
-            test: this.properties.test,
-            test1: this.properties.test1,
-            test2: this.properties.test2,
-            test3: this.properties.test3
+        var _this = this;
+        this.getList().then(function (ispList) {
+            var element = React.createElement(HelloWorld_1.default, {
+                description: _this.properties.description,
+                test: _this.properties.test,
+                test1: _this.properties.test1,
+                test2: _this.properties.test2,
+                test3: _this.properties.test3,
+                context: _this.context.pageContext,
+                ispList: ispList
+            });
+            ReactDom.render(element, _this.domElement);
         });
-        ReactDom.render(element, this.domElement);
     };
     Object.defineProperty(HelloWorldWebPart.prototype, "dataVersion", {
         // @ts-ignore
@@ -115,6 +129,21 @@ var HelloWorldWebPart = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    HelloWorldWebPart.prototype.getList = function () {
+        // Local environment
+        if (sp_core_library_2.Environment.type === sp_core_library_2.EnvironmentType.Local) {
+            return this._getMockListData().then(function (_a) {
+                var value = _a.value;
+                return value;
+            });
+        }
+        if ([sp_core_library_2.EnvironmentType.SharePoint, sp_core_library_2.EnvironmentType.ClassicSharePoint].indexOf(sp_core_library_2.Environment.type) !== -1) {
+            return this._getListData().then(function (_a) {
+                var value = _a.value;
+                return value;
+            });
+        }
+    };
     HelloWorldWebPart.prototype.getPropertyPaneConfiguration = function () {
         return {
             pages: [
@@ -159,17 +188,21 @@ var HelloWorldWebPart = (function (_super) {
             ]
         };
     };
+    HelloWorldWebPart.prototype._getMockListData = function () {
+        return MockHttpClient_1.default.get()
+            .then(function (data) { return ({ value: data }); });
+    };
+    HelloWorldWebPart.prototype._getListData = function () {
+        return this.context.spHttpClient.get(this.context.pageContext.web.absoluteUrl + "/_api/web/lists?$filter=Hidden eq false", sp_http_1.SPHttpClient.configurations.v1)
+            .then(function (response) {
+            return response.json();
+        });
+    };
     return HelloWorldWebPart;
 }(sp_webpart_base_1.BaseClientSideWebPart));
 exports.default = HelloWorldWebPart;
 
 
-
-/***/ }),
-/* 2 */
-/***/ (function(module, exports) {
-
-module.exports = __WEBPACK_EXTERNAL_MODULE_2__;
 
 /***/ }),
 /* 3 */
@@ -195,6 +228,36 @@ module.exports = __WEBPACK_EXTERNAL_MODULE_5__;
 
 "use strict";
 
+Object.defineProperty(exports, "__esModule", { value: true });
+var MockHttpClient = (function () {
+    function MockHttpClient() {
+    }
+    MockHttpClient.get = function () {
+        return new Promise(function (resolve) {
+            resolve(MockHttpClient._items);
+        });
+    };
+    MockHttpClient._items = [{ Title: 'Mock List', Id: '1' },
+        { Title: 'Mock List 2', Id: '2' },
+        { Title: 'Mock List 3', Id: '3' }];
+    return MockHttpClient;
+}());
+exports.default = MockHttpClient;
+
+
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports) {
+
+module.exports = __WEBPACK_EXTERNAL_MODULE_7__;
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -207,8 +270,8 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(0);
-var HelloWorld_module_scss_1 = __webpack_require__(7);
-var sp_lodash_subset_1 = __webpack_require__(13);
+var HelloWorld_module_scss_1 = __webpack_require__(9);
+var sp_lodash_subset_1 = __webpack_require__(15);
 var HelloWorld = (function (_super) {
     __extends(HelloWorld, _super);
     function HelloWorld() {
@@ -226,8 +289,11 @@ var HelloWorld = (function (_super) {
                         React.createElement("p", { className: HelloWorld_module_scss_1.default.description }, this.props.test1),
                         React.createElement("p", { className: HelloWorld_module_scss_1.default.description }, sp_lodash_subset_1.escape(this.props.test2)),
                         React.createElement("p", { className: HelloWorld_module_scss_1.default.description }, this.props.test3),
+                        React.createElement("p", { className: HelloWorld_module_scss_1.default.description }, this.props.context.web.title),
                         React.createElement("a", { href: "https://aka.ms/spfx", className: HelloWorld_module_scss_1.default.button },
-                            React.createElement("span", { className: HelloWorld_module_scss_1.default.label }, "Learn more")))))));
+                            React.createElement("span", { className: HelloWorld_module_scss_1.default.label }, "Learn more")))),
+                React.createElement("ul", { className: HelloWorld_module_scss_1.default.list }, this.props.ispList.map(function (ispItem) { return React.createElement("li", { key: ispItem.Id, className: HelloWorld_module_scss_1.default.listItem },
+                    React.createElement("span", { className: "ms-font-l" }, ispItem.Title)); })))));
     };
     return HelloWorld;
 }(React.Component));
@@ -236,25 +302,27 @@ exports.default = HelloWorld;
 
 
 /***/ }),
-/* 7 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 /* tslint:disable */
-__webpack_require__(8);
+__webpack_require__(10);
 var styles = {
-    helloWorld: 'helloWorld_b8d132b2',
-    container: 'container_b8d132b2',
-    row: 'row_b8d132b2',
-    column: 'column_b8d132b2',
-    'ms-Grid': 'ms-Grid_b8d132b2',
-    title: 'title_b8d132b2',
-    subTitle: 'subTitle_b8d132b2',
-    description: 'description_b8d132b2',
-    button: 'button_b8d132b2',
-    label: 'label_b8d132b2',
+    helloWorld: 'helloWorld_13c73494',
+    container: 'container_13c73494',
+    row: 'row_13c73494',
+    column: 'column_13c73494',
+    'ms-Grid': 'ms-Grid_13c73494',
+    title: 'title_13c73494',
+    subTitle: 'subTitle_13c73494',
+    description: 'description_13c73494',
+    button: 'button_13c73494',
+    label: 'label_13c73494',
+    list: 'list_13c73494',
+    listItem: 'listItem_13c73494',
 };
 exports.default = styles;
 /* tslint:enable */ 
@@ -262,11 +330,11 @@ exports.default = styles;
 
 
 /***/ }),
-/* 8 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var content = __webpack_require__(9);
-var loader = __webpack_require__(11);
+var content = __webpack_require__(11);
+var loader = __webpack_require__(13);
 
 if(typeof content === "string") content = [[module.i, content]];
 
@@ -276,21 +344,21 @@ for (var i = 0; i < content.length; i++) loader.loadStyles(content[i][1], true);
 if(content.locals) module.exports = content.locals;
 
 /***/ }),
-/* 9 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(10)(false);
+exports = module.exports = __webpack_require__(12)(false);
 // imports
 
 
 // module
-exports.push([module.i, ".helloWorld_b8d132b2 .container_b8d132b2{max-width:700px;margin:0 auto;box-shadow:0 2px 4px 0 rgba(0,0,0,.2),0 25px 50px 0 rgba(0,0,0,.1)}.helloWorld_b8d132b2 .row_b8d132b2{margin:0 -8px;box-sizing:border-box;color:\"[theme:white, default: #ffffff]\";background-color:\"[theme:themeDark, default: #005a9e]\";padding:20px}.helloWorld_b8d132b2 .row_b8d132b2:after,.helloWorld_b8d132b2 .row_b8d132b2:before{display:table;content:\"\";line-height:0}.helloWorld_b8d132b2 .row_b8d132b2:after{clear:both}.helloWorld_b8d132b2 .column_b8d132b2{position:relative;min-height:1px;padding-left:8px;padding-right:8px;box-sizing:border-box}[dir=ltr] .helloWorld_b8d132b2 .column_b8d132b2{float:left}[dir=rtl] .helloWorld_b8d132b2 .column_b8d132b2{float:right}.helloWorld_b8d132b2 .column_b8d132b2 .ms-Grid_b8d132b2{padding:0}@media (min-width:640px){.helloWorld_b8d132b2 .column_b8d132b2{width:83.33333333333334%}}@media (min-width:1024px){.helloWorld_b8d132b2 .column_b8d132b2{width:66.66666666666666%}}@media (min-width:1024px){[dir=ltr] .helloWorld_b8d132b2 .column_b8d132b2{left:16.66667%}[dir=rtl] .helloWorld_b8d132b2 .column_b8d132b2{right:16.66667%}}@media (min-width:640px){[dir=ltr] .helloWorld_b8d132b2 .column_b8d132b2{left:8.33333%}[dir=rtl] .helloWorld_b8d132b2 .column_b8d132b2{right:8.33333%}}.helloWorld_b8d132b2 .title_b8d132b2{font-size:21px;font-weight:100;color:\"[theme:white, default: #ffffff]\"}.helloWorld_b8d132b2 .description_b8d132b2,.helloWorld_b8d132b2 .subTitle_b8d132b2{font-size:17px;font-weight:300;color:\"[theme:white, default: #ffffff]\"}.helloWorld_b8d132b2 .button_b8d132b2{text-decoration:none;height:32px;min-width:80px;background-color:\"[theme:themePrimary, default: #0078d7]\";border-color:\"[theme:themePrimary, default: #0078d7]\";color:\"[theme:white, default: #ffffff]\";outline:transparent;position:relative;font-family:Segoe UI WestEuropean,Segoe UI,-apple-system,BlinkMacSystemFont,Roboto,Helvetica Neue,sans-serif;-webkit-font-smoothing:antialiased;font-size:14px;font-weight:400;border-width:0;text-align:center;cursor:pointer;display:inline-block;padding:0 16px}.helloWorld_b8d132b2 .button_b8d132b2 .label_b8d132b2{font-weight:600;font-size:14px;height:32px;line-height:32px;margin:0 4px;vertical-align:top;display:inline-block}", ""]);
+exports.push([module.i, ".helloWorld_13c73494 .container_13c73494{max-width:700px;margin:0 auto;box-shadow:0 2px 4px 0 rgba(0,0,0,.2),0 25px 50px 0 rgba(0,0,0,.1)}.helloWorld_13c73494 .row_13c73494{margin:0 -8px;box-sizing:border-box;color:\"[theme:white, default: #ffffff]\";background-color:\"[theme:themeDark, default: #005a9e]\";padding:20px}.helloWorld_13c73494 .row_13c73494:after,.helloWorld_13c73494 .row_13c73494:before{display:table;content:\"\";line-height:0}.helloWorld_13c73494 .row_13c73494:after{clear:both}.helloWorld_13c73494 .column_13c73494{position:relative;min-height:1px;padding-left:8px;padding-right:8px;box-sizing:border-box}[dir=ltr] .helloWorld_13c73494 .column_13c73494{float:left}[dir=rtl] .helloWorld_13c73494 .column_13c73494{float:right}.helloWorld_13c73494 .column_13c73494 .ms-Grid_13c73494{padding:0}@media (min-width:640px){.helloWorld_13c73494 .column_13c73494{width:83.33333333333334%}}@media (min-width:1024px){.helloWorld_13c73494 .column_13c73494{width:66.66666666666666%}}@media (min-width:1024px){[dir=ltr] .helloWorld_13c73494 .column_13c73494{left:16.66667%}[dir=rtl] .helloWorld_13c73494 .column_13c73494{right:16.66667%}}@media (min-width:640px){[dir=ltr] .helloWorld_13c73494 .column_13c73494{left:8.33333%}[dir=rtl] .helloWorld_13c73494 .column_13c73494{right:8.33333%}}.helloWorld_13c73494 .title_13c73494{font-size:21px;font-weight:100;color:\"[theme:white, default: #ffffff]\"}.helloWorld_13c73494 .description_13c73494,.helloWorld_13c73494 .subTitle_13c73494{font-size:17px;font-weight:300;color:\"[theme:white, default: #ffffff]\"}.helloWorld_13c73494 .button_13c73494{text-decoration:none;height:32px;min-width:80px;background-color:\"[theme:themePrimary, default: #0078d7]\";border-color:\"[theme:themePrimary, default: #0078d7]\";color:\"[theme:white, default: #ffffff]\";outline:transparent;position:relative;font-family:Segoe UI WestEuropean,Segoe UI,-apple-system,BlinkMacSystemFont,Roboto,Helvetica Neue,sans-serif;-webkit-font-smoothing:antialiased;font-size:14px;font-weight:400;border-width:0;text-align:center;cursor:pointer;display:inline-block;padding:0 16px}.helloWorld_13c73494 .button_13c73494 .label_13c73494{font-weight:600;font-size:14px;height:32px;line-height:32px;margin:0 4px;vertical-align:top;display:inline-block}.helloWorld_13c73494 .list_13c73494{margin:10;padding:10;line-height:50px;list-style-type:none;box-shadow:0 4px 4px 0 rgba(0,0,0,.2),0 25px 50px 0 rgba(0,0,0,.1)}.helloWorld_13c73494 .list_13c73494,.helloWorld_13c73494 .listItem_13c73494{color:#333;font-family:Segoe UI Regular WestEuropean,Segoe UI,Tahoma,Arial,sans-serif;font-size:14px;font-weight:400;box-sizing:border-box}.helloWorld_13c73494 .listItem_13c73494{vertical-align:center;margin:0;padding:0;box-shadow:none;padding:9px 28px 3px;position:relative}", ""]);
 
 // exports
 
 
 /***/ }),
-/* 10 */
+/* 12 */
 /***/ (function(module, exports) {
 
 /*
@@ -372,7 +440,7 @@ function toComment(sourceMap) {
 
 
 /***/ }),
-/* 11 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -722,10 +790,10 @@ function shouldUseCssText() {
 }
 
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(12)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(14)))
 
 /***/ }),
-/* 12 */
+/* 14 */
 /***/ (function(module, exports) {
 
 var g;
@@ -752,10 +820,10 @@ module.exports = g;
 
 
 /***/ }),
-/* 13 */
+/* 15 */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_13__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_15__;
 
 /***/ })
 /******/ ])});;
