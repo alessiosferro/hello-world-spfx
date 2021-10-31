@@ -1,3 +1,3 @@
-export interface IHelloWorldProps {
-  description: string;
-}
+import {IHelloWorldWebPartProps} from "../HelloWorldWebPart";
+
+export type IHelloWorldProps = IHelloWorldWebPartProps;
